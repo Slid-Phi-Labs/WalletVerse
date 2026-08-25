@@ -1,35 +1,34 @@
-# ComputePay — AI & Agent Usage Billing
+# ComputePay
 
-**L33tSaaS Labs · Smart Frame Certified · SFv1 · SF-1 · L/C/D**  
-**Status:** Claimed exclusive · Scaffold in progress (2026-08-25)
+**L33tSaaS Labs · Claimed exclusive**
 
-## Idea
-Usage-based billing and payment orchestration for AI compute and agent apps:
-- Meter tokens / API calls / GPU seconds
-- Attribute cost per team and per agent
-- Invoice automatically via Stripe
-- Single credits-and-cash dashboard with spend alerts
+AI & agent usage billing: meter tokens/API/GPU, attribute per workspace & agent, invoice, collect via Stripe.
 
-Ties directly to live Agent-Rider.
-
-## Stack
-- Next.js (App Router)
-- Postgres / Neon
-- Stripe (Checkout + webhooks)
-- Admin unlock via owner code
+## Status (v0)
+- Schema ready (users, workspaces, agents, usage_events, invoices, spend_alerts)
+- Admin unlock ready
+- Core API routes:
+  - `POST /api/usage` — ingest event
+  - `GET /api/usage` — query events
+  - `GET /api/dashboard/summary` — spend + invoices + alerts
+  - `GET /api/invoices`
+  - `POST /api/invoices/generate` — monthly rollup → draft invoice
+  - `POST /api/admin/unlock`
+- Minimal dashboard UI
+- Stripe deps present; test-mode wiring next
 
 ## Quick start
 ```bash
+cp .env.example .env.local
 npm install
-# set DATABASE_URL, STRIPE_SECRET_KEY, ADMIN_CODE
+psql $DATABASE_URL -f schema.sql
 npm run dev
 ```
 
-## Admin unlock
-`POST /api/admin/unlock` with `{ "code": "..." }` → role=admin, plan=admin, billing_bypass=true
-
-## Schema
-See `schema.sql` (customized production schema).
-
-## Blueprint origin
-From L33tSaaS pack `computepay-ai-agent-usage-billing` (claimed in saas-agent-vault).
+## Env
+```
+DATABASE_URL=
+ADMIN_CODE=change-me-in-production
+STRIPE_SECRET_KEY=
+STRIPE_WEBHOOK_SECRET=
+```
