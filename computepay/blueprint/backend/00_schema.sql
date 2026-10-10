@@ -1,0 +1,2 @@
+-- schema from original pack + customized production version lives at repo root schema.sql
+-- Key tables: users, workspaces, agents, usage_events, invoices, budgets
