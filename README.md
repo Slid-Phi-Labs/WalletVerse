@@ -21,4 +21,4 @@ squashes), all from `main`.
 Mixed: each subdirectory keeps its own `LICENSE` and terms, which
 govern that subdirectory. Nothing here is relicensed by the merge.
 
-Private — if you can read this, you're inside the lab.
+Public — each subdirectory keeps its own LICENSE and terms, which govern that subdirectory.

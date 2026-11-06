@@ -1,22 +1,29 @@
 #!/usr/bin/env python3
-"""Admin unlock for ComputePay — L33tSaaS owner gate."""
+"""Admin unlock for ComputePay — L33tSaaS owner gate.
+
+Refuses closed: there is no default admin code. Unless ADMIN_CODE is set in
+the environment, every code is rejected and the gate reports unconfigured.
+"""
 from __future__ import annotations
 import hashlib, hmac, os
 from typing import Any, Dict, Optional
 
-_DEFAULT = "Cp19801986#1"
-ADMIN_CODE = os.environ.get("ADMIN_CODE", _DEFAULT)
+ADMIN_CODE = os.environ.get("ADMIN_CODE") or ""
+
+
+def is_admin_configured() -> bool:
+    return bool(ADMIN_CODE)
+
 
 def verify_admin_code(code: Optional[str]) -> bool:
+    if not is_admin_configured():
+        return False
     if not code or not isinstance(code, str):
         return False
-    expected = ADMIN_CODE.encode("utf-8")
-    got = code.encode("utf-8")
-    if len(got) != len(expected):
-        got = hashlib.sha256(got).digest()
-        expected = hashlib.sha256(expected).digest()
-        return hmac.compare_digest(got, expected) and False
+    expected = hashlib.sha256(ADMIN_CODE.encode("utf-8")).digest()
+    got = hashlib.sha256(code.encode("utf-8")).digest()
     return hmac.compare_digest(got, expected)
+
 
 def grant_admin_payload(user_id: Optional[str] = None) -> Dict[str, Any]:
     return {

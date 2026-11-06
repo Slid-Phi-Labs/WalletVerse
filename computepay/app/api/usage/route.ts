@@ -1,8 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 import { query } from "@/lib/db";
+import { requireWorkspaceAuth } from "@/lib/auth";
+import { checkIntegerCents, isNonNegativeAmount } from "@/lib/money";
 
-/** POST /api/usage — ingest a usage event */
+/** POST /api/usage — ingest a usage event (workspace auth + integer-cents money) */
 export async function POST(req: NextRequest) {
+  const auth = requireWorkspaceAuth(req.headers);
+  if (!auth.ok) {
+    return NextResponse.json({ ok: false, error: auth.error }, { status: auth.status });
+  }
+
   const body = await req.json().catch(() => ({}));
   const {
     workspace_id,
@@ -20,11 +27,23 @@ export async function POST(req: NextRequest) {
     );
   }
 
+  if (!isNonNegativeAmount(quantity)) {
+    return NextResponse.json(
+      { ok: false, error: "quantity must be a finite number >= 0" },
+      { status: 400 }
+    );
+  }
+
+  const cents = checkIntegerCents(unit_cost_cents, "unit_cost_cents");
+  if (!cents.ok) {
+    return NextResponse.json({ ok: false, error: cents.error }, { status: 400 });
+  }
+
   const { rows, db } = await query(
     `INSERT INTO usage_events (workspace_id, agent_id, metric, quantity, unit_cost_cents, meta)
      VALUES ($1, $2, $3, $4, $5, $6)
      RETURNING id, workspace_id, agent_id, metric, quantity, unit_cost_cents, created_at`,
-    [workspace_id, agent_id || null, metric, quantity, unit_cost_cents, JSON.stringify(meta)]
+    [workspace_id, agent_id || null, metric, quantity, cents.value, JSON.stringify(meta)]
   );
 
   if (!db) {
@@ -38,7 +57,7 @@ export async function POST(req: NextRequest) {
         agent_id,
         metric,
         quantity,
-        unit_cost_cents,
+        unit_cost_cents: cents.value,
         created_at: new Date().toISOString(),
       },
     });
@@ -49,6 +68,11 @@ export async function POST(req: NextRequest) {
 
 /** GET /api/usage — query usage by workspace / agent / period */
 export async function GET(req: NextRequest) {
+  const auth = requireWorkspaceAuth(req.headers);
+  if (!auth.ok) {
+    return NextResponse.json({ ok: false, error: auth.error }, { status: auth.status });
+  }
+
   const { searchParams } = new URL(req.url);
   const workspace_id = searchParams.get("workspace_id");
   const agent_id = searchParams.get("agent_id");

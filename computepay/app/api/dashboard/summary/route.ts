@@ -1,7 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { query } from "@/lib/db";
+import { requireWorkspaceAuth } from "@/lib/auth";
 
 export async function GET(req: NextRequest) {
+  const auth = requireWorkspaceAuth(req.headers);
+  if (!auth.ok) {
+    return NextResponse.json({ ok: false, error: auth.error }, { status: auth.status });
+  }
   const { searchParams } = new URL(req.url);
   const workspace_id = searchParams.get("workspace_id");
 
@@ -13,7 +18,7 @@ export async function GET(req: NextRequest) {
   }
 
   const spend = await query(
-    `SELECT COALESCE(SUM(quantity * unit_cost_cents), 0)::bigint AS spend_cents,
+    `SELECT round(COALESCE(SUM(quantity * unit_cost_cents), 0))::bigint AS spend_cents,
             COUNT(*)::int AS event_count
      FROM usage_events
      WHERE workspace_id = $1
