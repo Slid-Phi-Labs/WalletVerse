@@ -1,0 +1,30 @@
+version: 2
+updates:
+  - package-ecosystem: "npm"
+    directory: "/agenTill"
+    schedule:
+      interval: "weekly"
+  - package-ecosystem: "npm"
+    directory: "/awlpay/sdk"
+    schedule:
+      interval: "weekly"
+  - package-ecosystem: "npm"
+    directory: "/computepay"
+    schedule:
+      interval: "weekly"
+  - package-ecosystem: "pip"
+    directory: "/alexa-pay-mcp"
+    schedule:
+      interval: "weekly"
+  - package-ecosystem: "pip"
+    directory: "/awlpay/mcp"
+    schedule:
+      interval: "weekly"
+  - package-ecosystem: "pip"
+    directory: "/awlpay/server"
+    schedule:
+      interval: "weekly"
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
