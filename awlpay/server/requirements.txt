@@ -4,7 +4,7 @@ pynacl==1.6.2
 starlette==1.7.0
 uvicorn==0.54.0
 # --- transitive pins (pulled in by starlette/uvicorn) ---
-anyio==4.15.1
+anyio==4.16.0
 click==8.5.0
 h11==0.16.0
 idna==3.20
